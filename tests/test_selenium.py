@@ -135,6 +135,66 @@ class TestCalculator:
         # Verifier que le chargement prend moins de 3 secondes
         assert load_time < 3.0, f"Page trop lente a charger: {load_time:.2f}s"
 
+    def test_decimal_numbers(self, driver):
+        """Test 6: Tester avec des nombres decimaux"""
+        file_path = os.path.abspath("../src/index.html")
+        driver.get(f"file://{file_path}")
+
+        driver.find_element(By.ID, "num1").clear()
+        driver.find_element(By.ID, "num1").send_keys("10.5")
+        driver.find_element(By.ID, "num2").clear()
+        driver.find_element(By.ID, "num2").send_keys("2.5")
+
+        select = Select(driver.find_element(By.ID, "operation"))
+        select.select_by_value("add")
+        driver.find_element(By.ID, "calculate").click()
+
+        result = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "result"))
+        )
+        assert "RÃ©sultat: 13" in result.text
+
+    def test_negative_numbers(self, driver):
+        """Test 7: Tester avec des nombres negatifs"""
+        file_path = os.path.abspath("../src/index.html")
+        driver.get(f"file://{file_path}")
+
+        driver.find_element(By.ID, "num1").clear()
+        driver.find_element(By.ID, "num1").send_keys("-8")
+        driver.find_element(By.ID, "num2").clear()
+        driver.find_element(By.ID, "num2").send_keys("-2")
+
+        select = Select(driver.find_element(By.ID, "operation"))
+        select.select_by_value("multiply")
+        driver.find_element(By.ID, "calculate").click()
+
+        result = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "result"))
+        )
+        assert "RÃ©sultat: 16" in result.text
+
+    def test_ui_colors_and_sizes(self, driver):
+        """Test 8: Tester des proprietes visuelles (couleurs/tailles)"""
+        file_path = os.path.abspath("../src/index.html")
+        driver.get(f"file://{file_path}")
+
+        container = driver.find_element(By.CLASS_NAME, "container")
+        input_num1 = driver.find_element(By.ID, "num1")
+        button = driver.find_element(By.ID, "calculate")
+
+        # Verifier la largeur max du container (definie dans style.css)
+        max_width = container.value_of_css_property("max-width")
+        assert max_width == "400px"
+
+        # Verifier une taille de police commune aux champs et bouton
+        assert input_num1.value_of_css_property("font-size") == "16px"
+        assert button.value_of_css_property("font-size") == "16px"
+
+        # Verifier que le bouton est visible et a une taille non nulle
+        assert button.is_displayed()
+        assert button.size["width"] > 0
+        assert button.size["height"] > 0
+
 
 if __name__ == "__main__":
     pytest.main(["-v", "--html=report.html", "--self-contained-html"])

@@ -11,3 +11,6 @@ Rapport d'analyse de l'étape 4.2
 
 ![alt text](image-1.png)
 Erreur de l'environnement toujours mais une erreur de plus avec le nouveau test ajouté dans le test_selenium.py
+
+Rapport d'erreur de l'étape 5.1
+![alt text](image-2.png)
