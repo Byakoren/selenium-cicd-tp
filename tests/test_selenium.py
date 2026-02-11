@@ -7,9 +7,10 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+
+from calculator_page import CalculatorPage
 
 
 class TestCalculator:
@@ -33,8 +34,8 @@ class TestCalculator:
 
     def test_page_loads(self, driver):
         """Test 1: Verifier que la page se charge correctement"""
-        file_path = os.path.abspath("../src/index.html")
-        driver.get(f"file://{file_path}")
+        page = CalculatorPage(driver)
+        page.load_page()
 
         # Verifier le titre
         assert "Calculatrice Simple" in driver.title
@@ -46,49 +47,33 @@ class TestCalculator:
 
     def test_addition(self, driver):
         """Test 2: Tester l'addition"""
-        file_path = os.path.abspath("../src/index.html")
-        driver.get(f"file://{file_path}")
+        page = CalculatorPage(driver)
+        page.load_page()
 
-        # Saisir les valeurs
-        driver.find_element(By.ID, "num1").send_keys("10")
-        driver.find_element(By.ID, "num2").send_keys("5")
-        # Selectionner l'addition
-        select = Select(driver.find_element(By.ID, "operation"))
-        select.select_by_value("add")
-        # Cliquer sur calculer
-        driver.find_element(By.ID, "calculate").click()
+        page.enter_first_number(10)
+        page.enter_second_number(5)
+        page.select_operation("add")
+        page.click_calculate()
 
-        # Verifier le resultat
-        result = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "result"))
-        )
-        assert "Résultat: 15" in result.text
+        assert "Résultat: 15" in page.get_result()
 
     def test_division_by_zero(self, driver):
         """Test 3: Tester la division par zero"""
-        file_path = os.path.abspath("../src/index.html")
-        driver.get(f"file://{file_path}")
+        page = CalculatorPage(driver)
+        page.load_page()
 
-        # Saisir les valeurs
-        driver.find_element(By.ID, "num1").clear()
-        driver.find_element(By.ID, "num1").send_keys("10")
-        driver.find_element(By.ID, "num2").clear()
-        driver.find_element(By.ID, "num2").send_keys("0")
-        # Selectionner la division
-        select = Select(driver.find_element(By.ID, "operation"))
-        select.select_by_value("divide")
-        driver.find_element(By.ID, "calculate").click()
+        page.clear_numbers()
+        page.enter_first_number(10)
+        page.enter_second_number(0)
+        page.select_operation("divide")
+        page.click_calculate()
 
-        # Verifier le message d'erreur
-        result = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "result"))
-        )
-        assert "Erreur: Division par zéro" in result.text
+        assert "Erreur: Division par zéro" in page.get_result()
 
     def test_all_operations(self, driver):
         """Test 4: Tester toutes les operations"""
-        file_path = os.path.abspath("../src/index.html")
-        driver.get(f"file://{file_path}")
+        page = CalculatorPage(driver)
+        page.load_page()
 
         operations = [
             ("add", "8", "2", "10"),
@@ -98,31 +83,21 @@ class TestCalculator:
         ]
 
         for op, num1, num2, expected in operations:
-            # Nettoyer les champs
-            driver.find_element(By.ID, "num1").clear()
-            driver.find_element(By.ID, "num2").clear()
-            # Saisir les valeurs
-            driver.find_element(By.ID, "num1").send_keys(num1)
-            driver.find_element(By.ID, "num2").send_keys(num2)
-            # Selectionner l'operation
-            select = Select(driver.find_element(By.ID, "operation"))
-            select.select_by_value(op)
-            # Calculer
-            driver.find_element(By.ID, "calculate").click()
+            page.clear_numbers()
+            page.enter_first_number(num1)
+            page.enter_second_number(num2)
+            page.select_operation(op)
+            page.click_calculate()
 
-            # Verifier le resultat
-            result = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.ID, "result"))
-            )
-            assert f"Résultat: {expected}" in result.text
+            assert f"Résultat: {expected}" in page.get_result()
             time.sleep(1)
 
     def test_page_load_time(self, driver):
         """Test 5: Mesurer le temps de chargement de la page"""
+        page = CalculatorPage(driver)
         start_time = time.time()
 
-        file_path = os.path.abspath("../src/index.html")
-        driver.get(f"file://{file_path}")
+        page.load_page()
 
         # Attendre que la page soit completement chargee
         WebDriverWait(driver, 10).until(
@@ -137,46 +112,34 @@ class TestCalculator:
 
     def test_decimal_numbers(self, driver):
         """Test 6: Tester avec des nombres decimaux"""
-        file_path = os.path.abspath("../src/index.html")
-        driver.get(f"file://{file_path}")
+        page = CalculatorPage(driver)
+        page.load_page()
 
-        driver.find_element(By.ID, "num1").clear()
-        driver.find_element(By.ID, "num1").send_keys("10.5")
-        driver.find_element(By.ID, "num2").clear()
-        driver.find_element(By.ID, "num2").send_keys("2.5")
+        page.clear_numbers()
+        page.enter_first_number(10.5)
+        page.enter_second_number(2.5)
+        page.select_operation("add")
+        page.click_calculate()
 
-        select = Select(driver.find_element(By.ID, "operation"))
-        select.select_by_value("add")
-        driver.find_element(By.ID, "calculate").click()
-
-        result = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "result"))
-        )
-        assert "RÃ©sultat: 13" in result.text
+        assert "Résultat: 13" in page.get_result()
 
     def test_negative_numbers(self, driver):
         """Test 7: Tester avec des nombres negatifs"""
-        file_path = os.path.abspath("../src/index.html")
-        driver.get(f"file://{file_path}")
+        page = CalculatorPage(driver)
+        page.load_page()
 
-        driver.find_element(By.ID, "num1").clear()
-        driver.find_element(By.ID, "num1").send_keys("-8")
-        driver.find_element(By.ID, "num2").clear()
-        driver.find_element(By.ID, "num2").send_keys("-2")
+        page.clear_numbers()
+        page.enter_first_number(-8)
+        page.enter_second_number(-2)
+        page.select_operation("multiply")
+        page.click_calculate()
 
-        select = Select(driver.find_element(By.ID, "operation"))
-        select.select_by_value("multiply")
-        driver.find_element(By.ID, "calculate").click()
-
-        result = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "result"))
-        )
-        assert "RÃ©sultat: 16" in result.text
+        assert "Résultat: 16" in page.get_result()
 
     def test_ui_colors_and_sizes(self, driver):
         """Test 8: Tester des proprietes visuelles (couleurs/tailles)"""
-        file_path = os.path.abspath("../src/index.html")
-        driver.get(f"file://{file_path}")
+        page = CalculatorPage(driver)
+        page.load_page()
 
         container = driver.find_element(By.CLASS_NAME, "container")
         input_num1 = driver.find_element(By.ID, "num1")
