@@ -62,7 +62,7 @@ class TestCalculator:
         result = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.ID, "result"))
         )
-        assert "RÃ©sultat: 15" in result.text
+        assert "Résultat: 15" in result.text
 
     def test_division_by_zero(self, driver):
         """Test 3: Tester la division par zero"""
@@ -83,7 +83,7 @@ class TestCalculator:
         result = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.ID, "result"))
         )
-        assert "Erreur: Division par zÃ©ro" in result.text
+        assert "Erreur: Division par zéro" in result.text
 
     def test_all_operations(self, driver):
         """Test 4: Tester toutes les operations"""
@@ -114,8 +114,26 @@ class TestCalculator:
             result = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "result"))
             )
-            assert f"RÃ©sultat: {expected}" in result.text
+            assert f"Résultat: {expected}" in result.text
             time.sleep(1)
+
+    def test_page_load_time(self, driver):
+        """Test 5: Mesurer le temps de chargement de la page"""
+        start_time = time.time()
+
+        file_path = os.path.abspath("../src/index.html")
+        driver.get(f"file://{file_path}")
+
+        # Attendre que la page soit completement chargee
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "calculator"))
+        )
+
+        load_time = time.time() - start_time
+        print(f"Temps de chargement: {load_time:.2f} secondes")
+
+        # Verifier que le chargement prend moins de 3 secondes
+        assert load_time < 3.0, f"Page trop lente a charger: {load_time:.2f}s"
 
 
 if __name__ == "__main__":
